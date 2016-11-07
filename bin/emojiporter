@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const prompt = require('prompt');
+const yargs = require('yargs');
+const Mattermost = require('mattermost');
+
+const Const = require('../lib/helpers/const');
+const ActionList = Const.ActionList;
+const ActionTypes = Const.ActionTypes;
+
+const exportEmoji = require('../lib/actions/exportEmoji');
+const importEmoji = require('../lib/actions/importEmoji');
+
+// Validate action
+const action = yargs.argv._[0];
+if (ActionList.indexOf(action) < 0) {
+    console.error(`${action} is an invalid action. It must be one of [${ActionList}]`)
+    return;
+}
+
+const schema = {
+    properties: {
+        url: {
+            message: 'Mattermost Server URL',
+            required: true
+        },
+        teamId: {
+            message: 'Team ID (not team name)',
+            required: true
+        },
+        loginId: {
+            message: 'Username or e-mail',
+            required: true
+        },
+        password: {
+            message: 'Password',
+            hidden: true,
+            required: true
+        },
+        exportTitle: {
+            message: 'Export title',
+            ask: () => {
+                return action === ActionTypes.EXPORT;
+            }
+        },
+        exportFile: {
+            message: 'Export file (.yaml)',
+            ask: () => {
+                return action === ActionTypes.EXPORT;
+            }
+        },
+        importFile: {
+            message: 'Import file (.yaml)',
+            ask: () => {
+                return action === ActionTypes.IMPORT;
+            }
+        }
+    }
+};
+
+
+// Process the info required to perform the action
+prompt.override = yargs.argv;
+prompt.message = '';
+prompt.start();
+prompt.get(schema, (err, result) => {
+
+    // Team info
+    const url = result.url;
+    const teamId = result.teamId;
+
+    // Login info
+    const loginId = result.loginId;
+    const password = result.password;
+
+    const client = new Mattermost.Client();
+    client.setUrl(url);
+    client.setTeamId(teamId);
+    client.useHeaderToken();
+
+    const response = client.login(loginId, password, undefined,
+        (data, res) => {
+          console.log('Login success');
+            switch (action) {
+                case ActionTypes.EXPORT:
+                    exportEmoji(client, data, result);
+                    break;
+                case ActionTypes.IMPORT:
+                    importEmoji(client, data, result);
+                    break;
+            }
+        },
+        (err) => {
+            console.log('Login error:', err);
+        });
+});

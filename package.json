@@ -1,0 +1,41 @@
+{
+  "name": "emojiporter",
+  "version": "0.0.1",
+  "description": "CLI to export/import custom emojis for Mattermost",
+  "author": "Lisa Huynh",
+  "license": "MIT",
+  "main": "./bin/emojiporter",
+  "bin": {
+    "emojiporter": "./bin/emojiporter"
+  },
+  "keywords": [
+    "mattermost",
+    "chat",
+    "custom",
+    "emojis",
+    "emoji",
+    "emote",
+    "emotes",
+    "emoticon",
+    "emoticons"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lisamai/emojiporter.git"
+  },
+  "engines": {
+    "node": ">= 0.11.x",
+    "npm": ">= 2.5.x"
+  },
+  "preferGlobal": "true",
+  "dependencies": {
+    "babel-runtime": "^6.18.0",
+    "js-yaml": "^3.3.1",
+    "mattermost": "^3.4.0",
+    "path": "^0.12.7",
+    "prompt": "^1.0.0",
+    "request": "^2.78.0",
+    "valid-url": "^1.0.9",
+    "yargs": "^6.3.0"
+  }
+}
