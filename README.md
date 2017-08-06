@@ -46,13 +46,23 @@ $ emojiporter import --url https://mattermost.mymattermostdomain.com --teamId cc
 ```
 ## Parameters
 
+**action** - [export|import] Whether to export existing custom emojis to a yaml file or to import new custom emojis from a yaml file.
+
+**userProvideToken** - [true|false] Authenticate requests by using the Mattermost tokens that you can find in cookies or via logging in using a username/email. Use this to workaround things like SSO logins. Default: false.
+
 **--url** - Mattermost Server URL. Example: https://mattermost.mymattermostdomain.com
 
 **--teamId** - Team ID, not to be confused with the team name. The easiest way I've found to get this is to pop open the Network in the Developer tab and grab it from the URL. Example: `{mattermost_server}/api/v3/teams/{team_id_here}/channels/`
 
+**--token** - Token for MM requests. Can be found in cookies as: MMAUTHTOKEN.
+
+**--id** - User id for MM requests. Can be found in cookies as: MMUSERID.
+
 **--loginId** - The username or e-mail linked to the Mattermost account.
 
 **--password** - Password for the Mattermost account.
+
+**--mfaToken** - Multi-factor authentication token.
 
 **--exportTitle** - Title to be used for exported emoji yaml file.
 

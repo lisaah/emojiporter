@@ -12,11 +12,31 @@ const ActionTypes = Const.ActionTypes;
 const exportEmoji = require('../lib/actions/exportEmoji');
 const importEmoji = require('../lib/actions/importEmoji');
 
+if (yargs.argv._.length < 1) {
+    console.error('emojiporter <action> <userProvideToken>');
+    return;
+}
+
 // Validate action
 const action = yargs.argv._[0];
 if (ActionList.indexOf(action) < 0) {
     console.error(`${action} is an invalid action. It must be one of [${ActionList}]`)
     return;
+}
+const userProvideToken = yargs.argv._[1] === 'true';
+
+const runAction = (client, id, params) => {
+    switch (action) {
+        case ActionTypes.EXPORT:
+            exportEmoji(client, params.exportTitle, params.exportFile);
+            break;
+        case ActionTypes.IMPORT:
+            importEmoji(client, id, params.importFile);
+            break;
+        default:
+            console.error(`${action} is an invalid action.`);
+            break;
+    }
 }
 
 const schema = {
@@ -29,15 +49,45 @@ const schema = {
             message: 'Team ID (not team name)',
             required: true
         },
+
+        token: {
+            message: 'MMAUTHTOKEN',
+            required: true,
+            ask: () => {
+                return userProvideToken;
+            }
+        },
+        id: {
+            message: 'MMUSERID',
+            required: true,
+            ask: () => {
+                return userProvideToken;
+            }
+        },
+
         loginId: {
             message: 'Username or e-mail',
-            required: true
+            required: true,
+            ask: () => {
+                return !userProvideToken;
+            }
         },
         password: {
             message: 'Password',
             hidden: true,
-            required: true
+            required: true,
+            ask: () => {
+                return !userProvideToken;
+            }
         },
+        mfaToken: {
+            message: 'MFA Token (optional)',
+            required: false,
+            ask: () => {
+                return !userProvideToken;
+            }
+        },
+
         exportTitle: {
             message: 'Export title',
             ask: () => {
@@ -64,34 +114,39 @@ const schema = {
 prompt.override = yargs.argv;
 prompt.message = '';
 prompt.start();
-prompt.get(schema, (err, result) => {
+prompt.get(schema, (err, params) => {
 
     // Team info
-    const url = result.url;
-    const teamId = result.teamId;
+    const url = params.url;
+    const teamId = params.teamId;
 
-    // Login info
-    const loginId = result.loginId;
-    const password = result.password;
+    // Login with auth.
+    const token = params.token;
+    const id = params.id;
+
+    // Login with ldap/user info
+    const loginId = params.loginId;
+    const password = params.password;
+    const mfaToken = params.mfaToken || undefined;
 
     const client = new Mattermost.Client();
     client.setUrl(url);
     client.setTeamId(teamId);
     client.useHeaderToken();
 
-    const response = client.login(loginId, password, undefined,
-        (data, res) => {
-          console.log('Login success');
-            switch (action) {
-                case ActionTypes.EXPORT:
-                    exportEmoji(client, data, result);
-                    break;
-                case ActionTypes.IMPORT:
-                    importEmoji(client, data, result);
-                    break;
-            }
-        },
-        (err) => {
-            console.log('Login error:', err);
-        });
+    if (!token) {
+        client.login(loginId, password, mfaToken,
+            (data, res) => {
+                console.log('Login success');
+                runAction(client, data.id, params);
+            },
+            (err) => {
+                console.log('Login error:', err);
+            });
+    } else {
+        client.token = token;
+        client.useHeaderToken();
+        console.log('Running request with provided token and id');
+        runAction(client, id, params);
+    }
 });
