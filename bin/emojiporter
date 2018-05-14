@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+require('babel-polyfill');
+require('isomorphic-fetch');
 const fs = require('fs');
 const prompt = require('prompt');
 const yargs = require('yargs');
-const Mattermost = require('mattermost');
+const Mattermost = require('mattermost-redux/client');
 
 const Const = require('../lib/helpers/const');
 const ActionList = Const.ActionList;
@@ -43,10 +45,6 @@ const schema = {
     properties: {
         url: {
             message: 'Mattermost Server URL',
-            required: true
-        },
-        teamId: {
-            message: 'Team ID (not team name)',
             required: true
         },
 
@@ -129,13 +127,11 @@ prompt.get(schema, (err, params) => {
     const password = params.password;
     const mfaToken = params.mfaToken || undefined;
 
-    const client = new Mattermost.Client();
+    const client = Mattermost.Client4;
     client.setUrl(url);
-    client.setTeamId(teamId);
-    client.useHeaderToken();
 
     if (!token) {
-        client.login(loginId, password, mfaToken,
+        client.login(loginId, password, mfaToken).then(
             (data, res) => {
                 console.log('Login success');
                 runAction(client, data.id, params);
@@ -144,8 +140,7 @@ prompt.get(schema, (err, params) => {
                 console.log('Login error:', err);
             });
     } else {
-        client.token = token;
-        client.useHeaderToken();
+        client.setToken(token);
         console.log('Running request with provided token and id');
         runAction(client, id, params);
     }
