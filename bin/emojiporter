@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
+require('babel-polyfill');
+global.fetch = require('isomorphic-fetch');
+
 const fs = require('fs');
 const prompt = require('prompt');
 const yargs = require('yargs');
-const Mattermost = require('mattermost');
+const Client4 = require('mattermost-redux/client/client4').default;
 
 const Const = require('../lib/helpers/const');
 const ActionList = Const.ActionList;
@@ -45,11 +48,6 @@ const schema = {
             message: 'Mattermost Server URL',
             required: true
         },
-        teamId: {
-            message: 'Team ID (not team name)',
-            required: true
-        },
-
         token: {
             message: 'MMAUTHTOKEN',
             required: true,
@@ -64,7 +62,6 @@ const schema = {
                 return userProvideToken;
             }
         },
-
         loginId: {
             message: 'Username or e-mail',
             required: true,
@@ -87,7 +84,6 @@ const schema = {
                 return !userProvideToken;
             }
         },
-
         exportTitle: {
             message: 'Export title',
             ask: () => {
@@ -118,7 +114,6 @@ prompt.get(schema, (err, params) => {
 
     // Team info
     const url = params.url;
-    const teamId = params.teamId;
 
     // Login with auth.
     const token = params.token;
@@ -129,23 +124,20 @@ prompt.get(schema, (err, params) => {
     const password = params.password;
     const mfaToken = params.mfaToken || undefined;
 
-    const client = new Mattermost.Client();
+    const client = new Client4();
     client.setUrl(url);
-    client.setTeamId(teamId);
-    client.useHeaderToken();
 
     if (!token) {
-        client.login(loginId, password, mfaToken,
-            (data, res) => {
-                console.log('Login success');
-                runAction(client, data.id, params);
-            },
-            (err) => {
-                console.log('Login error:', err);
-            });
+        client.login(loginId, password, mfaToken)
+        .then(data => {
+          console.log('Login success');
+          runAction(client, data.id, params);
+        })
+        .catch(err => {
+          console.log('Login error:', err);
+        })
     } else {
-        client.token = token;
-        client.useHeaderToken();
+        client.setToken(token);
         console.log('Running request with provided token and id');
         runAction(client, id, params);
     }
