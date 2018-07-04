@@ -16,24 +16,22 @@ $ npm i -g emojiporter
 
 You can bulk export or upload emojis using the YAML format that emojipacks use. Specify what you want to do, and it'll ask you a few relevant questions.
 
-Export Emoji:
+### Export Emoji:
 
 ```bash
 $ emojiporter export
 Mattermost Server URL: https://mattermost.mymattermostdomain.com
-Team ID (not team name): ccxzr5hmdfr4d89ep193e1warc
 Username or e-mail: hey@gmail.com
 Password: *****
 Export title: MahMojis
 Export file (.yaml): mahmojis.yaml
 ```
 
-Import Emoji:
+### Import Emoji:
 
 ```bash
 $ emojiporter import
 Mattermost Server URL: https://mattermost.mymattermostdomain.com
-Team ID (not team name): ccxzr5hmdfr4d89ep193e1warc
 Username or e-mail: hey@gmail.com
 Password: *****
 Import file (.yaml): ./example/penz.yaml
@@ -42,8 +40,13 @@ Import file (.yaml): ./example/penz.yaml
 Alternatively, you can supply the parameters at once. The parameters are described in more detail below.
 
 ```bash
-$ emojiporter import --url https://mattermost.mymattermostdomain.com --teamId ccxzr5hmdfr4d89ep193e1warc --loginId hey@gmail.com --password sweetpassword --importFile ./example/penz.yaml
+# Using username and password
+$ emojiporter import --url https://mattermost.mymattermostdomain.com --loginId hey@gmail.com --password sweetpassword --importFile ./example/penz.yaml
+
+# Using auth token and user id
+$ emojiporter import true --url https://mattermost.mymattermostdomain.com --token 1eniy86hjtr338k4zdgc9bfwae --id 8sjipfs0x3de8nmhciecej7tuc --importFile ./example/penz.yaml
 ```
+
 ## Parameters
 
 **action** - [export|import] Whether to export existing custom emojis to a yaml file or to import new custom emojis from a yaml file.
@@ -51,8 +54,6 @@ $ emojiporter import --url https://mattermost.mymattermostdomain.com --teamId cc
 **userProvideToken** - [true|false] Authenticate requests by using the Mattermost tokens that you can find in cookies or via logging in using a username/email. Use this to workaround things like SSO logins. Default: false.
 
 **--url** - Mattermost Server URL. Example: https://mattermost.mymattermostdomain.com
-
-**--teamId** - Team ID, not to be confused with the team name. The easiest way I've found to get this is to pop open the Network in the Developer tab and grab it from the URL. Example: `{mattermost_server}/api/v3/teams/{team_id_here}/channels/`
 
 **--token** - Token for MM requests. Can be found in cookies as: MMAUTHTOKEN.
 
