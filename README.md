@@ -6,6 +6,13 @@ CLI utility to export/import custom emojis for Mattermost.
 
 * NPM and [Node](https://nodejs.org/en/download/)
 
+## Versions
+
+| Mattermost API| Emojiporter |
+|--------------:|------------:|
+|          v3.x |        v1.x | 
+|          v4.x |        v2.x | 
+
 ## Install
 
 ```bash
